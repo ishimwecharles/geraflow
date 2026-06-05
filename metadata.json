@@ -1,0 +1,6 @@
+{
+  "name": "Gera Flow",
+  "description": "Rwanda merchant pay QR code gateway featuring MTN MoMo RequestToPay simulations and live Firestore tracking dashboards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1E32FF" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="icon" type="image/svg+xml" href="/gera-pay-qr-logo.svg?v=2" />
+    <link rel="icon" type="image/png" href="/icon-192.png?v=2" />
+    <link rel="apple-touch-icon" href="/icon-180.png?v=2" />
+    <link rel="manifest" href="/manifest.json?v=2" />
+    <title>Gera Flow Merchant Terminal</title>
+    <script>
+      // Global console debugging signature for mobile inspection log pipelines
+      console.log("[GeraPay] Bootstrapping mobile runtime layers...");
+
+      // Timeout check: if the React app takes more than 5 seconds to mount on slow cellular connections
+      window.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+          var loader = document.getElementById('initial-loader');
+          if (loader && loader.style.display !== 'none' && document.getElementById('loader-progress-bar')) {
+            console.warn('[GeraPay PWA] Initial handshake load timeout triggered.');
+            loader.innerHTML = `
+              <div style="position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 320px; width: 100%;">
+                <div style="width: 72px; height: 72px; border-radius: 24px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25); display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+                  <span style="font-size: 32px;">⏳</span>
+                </div>
+                <h1 style="color: #ffffff; font-size: 16px; font-weight: 800; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Handshake Timeout</h1>
+                <p style="color: #94a3b8; font-size: 12px; line-height: 1.6; margin: 0 0 24px 0; font-family: system-ui, -apple-system, sans-serif;">
+                  The payment server is taking longer than expected. Check your connection or continue in offline demo mode.
+                </p>
+                <div style="display: flex; gap: 12px; width: 100%;">
+                  <button onclick="window.location.reload()" style="flex: 1; background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 12px; padding: 12.5px; font-size: 11.5px; font-weight: bold; cursor: pointer; font-family: system-ui, -apple-system, sans-serif;">
+                    Retry Check
+                  </button>
+                  <button onclick="window.enterDemoOfflineMode()" style="flex: 1; background-color: #FFC107; color: #0C0E14; border: none; border-radius: 12px; padding: 12.5px; font-size: 11.5px; font-weight: 800; cursor: pointer; font-family: system-ui, -apple-system, sans-serif;">
+                    Demo Bypass
+                  </button>
+                </div>
+              </div>
+            `;
+          }
+        }, 5000);
+      });
+
+      window.enterDemoOfflineMode = function() {
+        localStorage.setItem('gerapay_is_activated', 'true');
+        localStorage.setItem('gerapay_active_plan', 'free');
+        localStorage.setItem('gerapay_demo_bypass', 'true');
+        window.location.search = '?offline_bypass=true';
+      };
+
+      // Global window error listener for module import failures
+      window.addEventListener('error', function(e) {
+        console.error('[GeraPay Boot Panic]', e);
+        const root = document.getElementById('root');
+        if (root && (!root.children || root.children.length === 0 || root.querySelector('#initial-loader'))) {
+          root.innerHTML = `
+            <div style="min-height: 100vh; background-color: #0C0E14; color: #cbd5e1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; font-family: system-ui, -apple-system, sans-serif; text-align: center; box-sizing: border-box;">
+              <div style="background-color: #11141C; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 32px; max-width: 400px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); width: 100%;">
+                <div style="color: #ef4444; font-size: 40px; margin-bottom: 16px;">⚠️</div>
+                <h2 style="color: #ffffff; font-size: 16px; font-weight: 800; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Handshake Interrupted</h2>
+                <p style="color: #94a3b8; font-size: 12px; line-height: 1.6; margin-bottom: 20px;">
+                  Connection error. Please refresh or check internet.
+                </p>
+                <div style="background-color: #151922; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; font-family: monospace; font-size: 10px; text-align: left; color: #a78bfa; overflow-x: auto; max-height: 100px; margin-bottom: 20px; white-space: pre-wrap; word-break: break-all;">
+                  ${e.message || 'SyntaxError / Legacy Device Environment Detected'}
+                </div>
+                <button onclick="window.location.reload()" style="background-color: #1B32FF; color: white; border: none; border-radius: 12px; padding: 12px 24px; font-size: 12px; font-weight: bold; width: 100%; cursor: pointer; transition: opacity 0.2s;">
+                  Reconnect Terminal
+                </button>
+              </div>
+            </div>
+          `;
+        }
+      });
+
+      // Global promise failure listener for Firebase WebSocket blockage / CORS issues in embedded webviews
+      window.addEventListener('unhandledrejection', function(e) {
+        console.error('[GeraPay Promise Panic]', e);
+        const root = document.getElementById('root');
+        if (root && (!root.children || root.children.length === 0 || root.querySelector('#initial-loader'))) {
+          root.innerHTML = `
+            <div style="min-height: 100vh; background-color: #0C0E14; color: #cbd5e1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; font-family: system-ui, -apple-system, sans-serif; text-align: center; box-sizing: border-box;">
+              <div style="background-color: #11141C; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 32px; max-width: 400px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); width: 100%;">
+                <div style="color: #f59e0b; font-size: 40px; margin-bottom: 16px;">🌐</div>
+                <h2 style="color: #ffffff; font-size: 16px; font-weight: 800; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Network Gateway Lost</h2>
+                <p style="color: #94a3b8; font-size: 12px; line-height: 1.6; margin-bottom: 20px;">
+                  Connection error. Please refresh or check internet.
+                </p>
+                <button onclick="window.location.reload()" style="background-color: #1B32FF; color: white; border: none; border-radius: 12px; padding: 12px 24px; font-size: 12px; font-weight: bold; width: 100%; cursor: pointer;">
+                  Reconnect Terminal
+                </button>
+              </div>
+            </div>
+          `;
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <div id="root">
+      <div id="initial-loader" style="min-height: 100vh; background-color: #0C0E14; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; font-family: system-ui, -apple-system, sans-serif; box-sizing: border-box; position: relative; overflow: hidden; width: 100%;">
+        <!-- Glowing Ambient Circle -->
+        <div style="position: absolute; width: 300px; height: 300px; background: radial-gradient(circle, rgba(27, 50, 255, 0.12) 0%, transparent 70%); pointer-events: none; top: 30%; z-index: 1;"></div>
+        
+        <div style="position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 320px;">
+          <!-- App Logo SVG -->
+          <div style="width: 72px; height: 72px; border-radius: 24px; background: rgba(30, 50, 255, 0.1); border: 1px solid rgba(30, 50, 255, 0.25); display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+            <img src="/gera-pay-qr-logo.svg?v=2" alt="Gera Flow" style="width: 48px; height: 48px; object-fit: contain; border-radius: 12px; animation: pulse 2s infinite ease-in-out;" />
+          </div>
+          
+          <h1 style="color: #ffffff; font-size: 20px; font-weight: 800; margin: 0 0 8px 0; letter-spacing: -0.5px;">GERA FLOW</h1>
+          <p style="color: #64748b; font-size: 12px; font-weight: 500; margin: 0 0 32px 0;">Securing PWA Terminal Node...</p>
+          
+          <!-- Animated Bar Loader -->
+          <div style="width: 160px; height: 4px; background-color: rgba(255, 255, 255, 0.05); border-radius: 9999px; overflow: hidden; position: relative; margin-bottom: 12px;">
+            <div id="loader-progress-bar" style="position: absolute; left: 0; top: 0; height: 100%; width: 35%; background-color: #1B32FF; border-radius: 9999px; animation: loading 1.8s infinite ease-in-out;"></div>
+          </div>
+          <span style="color: #475569; font-size: 10px; font-family: monospace; letter-spacing: 0.1em; text-transform: uppercase;">Handshake in progress</span>
+        </div>
+      </div>
+      
+      <style>
+        @keyframes loading {
+          0% { left: -40%; width: 40%; }
+          50% { left: 40%; width: 60%; }
+          100% { left: 100%; width: 40%; }
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); opacity: 0.8; }
+          50% { transform: scale(1.08); opacity: 1; }
+        }
+      </style>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
