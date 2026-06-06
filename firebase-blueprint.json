@@ -1,0 +1,301 @@
+{
+  "entities": {
+    "client": {
+      "title": "Client",
+      "description": "Representative of a merchant / client utilizing Gera Pay QR",
+      "type": "object",
+      "properties": {
+        "clientId": { "type": "string" },
+        "businessName": { "type": "string" },
+        "ownerName": { "type": "string" },
+        "phone": { "type": "string" },
+        "momoCode": { "type": "string" },
+        "location": { "type": "string" },
+        "category": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["clientId", "businessName", "ownerName", "phone", "momoCode", "location", "category", "status"]
+    },
+    "transaction": {
+      "title": "Transaction",
+      "description": "A payment transaction initiated by a customer",
+      "type": "object",
+      "properties": {
+        "clientId": { "type": "string" },
+        "clientDocId": { "type": "string" },
+        "businessName": { "type": "string" },
+        "momoCode": { "type": "string" },
+        "amount": { "type": "number" },
+        "note": { "type": "string" },
+        "status": { "type": "string" },
+        "momoReferenceId": { "type": "string" },
+        "momoStatus": { "type": "string" },
+        "momoRawResponse": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["clientId", "businessName", "amount", "status"]
+    },
+    "payment": {
+      "title": "Payment Log",
+      "description": "An audit log of payments recorded",
+      "type": "object",
+      "properties": {
+        "transactionId": { "type": "string" },
+        "clientId": { "type": "string" },
+        "businessName": { "type": "string" },
+        "amount": { "type": "number" },
+        "method": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["transactionId", "clientId", "amount", "method"]
+    },
+    "activation": {
+      "title": "Activation Licence",
+      "description": "Subscription licensing and device lock information",
+      "type": "object",
+      "properties": {
+        "licenseCode": { "type": "string" },
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "deviceId": { "type": "string" },
+        "deviceName": { "type": "string" },
+        "planId": { "type": "string" },
+        "planName": { "type": "string" },
+        "billingCycle": { "type": "string" },
+        "amountPaid": { "type": "number" },
+        "currency": { "type": "string" },
+        "paymentMethod": { "type": "string" },
+        "paymentPhone": { "type": "string" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "expiresAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["licenseCode", "userId", "userEmail", "deviceId", "planId", "status", "expiresAt"]
+    },
+    "user": {
+      "title": "Gera Pay User Account",
+      "description": "Business login account for merchants and their staff (cashier, waiter, business_admin)",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "password": { "type": "string" },
+        "role": { "type": "string", "enum": ["super_admin", "business_admin", "cashier", "waiter"] },
+        "businessId": { "type": "string" },
+        "businessName": { "type": "string" },
+        "plan": { "type": "string" },
+        "active": { "type": "boolean" },
+        "maxDevices": { "type": "number" },
+        "maxStaff": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "password", "role", "active", "createdAt"]
+    },
+    "device": {
+      "title": "Device Terminal",
+      "description": "Hardware and browser context activation parameters associated with an active user account",
+      "type": "object",
+      "properties": {
+        "deviceId": { "type": "string" },
+        "businessId": { "type": "string" },
+        "userId": { "type": "string" },
+        "deviceName": { "type": "string" },
+        "deviceType": { "type": "string", "enum": ["phone", "tablet", "pc"] },
+        "role": { "type": "string" },
+        "active": { "type": "boolean" },
+        "lastSeen": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["deviceId", "businessId", "userId", "deviceName", "deviceType", "role", "active", "createdAt"]
+    },
+    "systemLog": {
+      "title": "System Log",
+      "description": "Diagnostic and error tracking log entries logged by Gera AI Monitor",
+      "type": "object",
+      "properties": {
+        "logId": { "type": "string" },
+        "errorType": { "type": "string" },
+        "message": { "type": "string" },
+        "route": { "type": "string" },
+        "userAgent": { "type": "string" },
+        "deviceType": { "type": "string", "enum": ["desktop", "mobile", "tablet", "terminal"] },
+        "browser": { "type": "string" },
+        "networkStatus": { "type": "string", "enum": ["online", "offline"] },
+        "loadTime": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+        "suggestedFix": { "type": "string" },
+        "resolved": { "type": "boolean" }
+      },
+      "required": ["logId", "errorType", "message", "route", "severity", "resolved"]
+    },
+    "autoFixLog": {
+      "title": "Auto Fix Log",
+      "description": "Log entries recording diagnostic automated corrections applied to the platform",
+      "type": "object",
+      "properties": {
+        "fixId": { "type": "string" },
+        "errorId": { "type": "string" },
+        "fixType": { "type": "string" },
+        "actionTaken": { "type": "string" },
+        "beforeStatus": { "type": "string" },
+        "afterStatus": { "type": "string" },
+        "triggeredBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "success": { "type": "boolean" },
+        "message": { "type": "string" }
+      },
+      "required": ["fixId", "fixType", "actionTaken", "beforeStatus", "afterStatus", "triggeredBy", "createdAt", "success", "message"]
+    },
+    "customerFeedback": {
+      "title": "Customer Feedback Log",
+      "description": "Rating and message reviews logged by customers on completed restaurant invoices",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "rating": { "type": "number", "minimum": 1, "maximum": 5 },
+        "feedbackMessage": { "type": "string" },
+        "billId": { "type": "string" },
+        "businessId": { "type": "string" },
+        "businessName": { "type": "string" },
+        "tableNumber": { "type": "string" },
+        "customerName": { "type": "string" },
+        "paymentStatus": { "type": "string" },
+        "billAmount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["rating", "billId", "businessId", "paymentStatus", "createdAt"]
+    },
+    "menu": {
+      "title": "Menu",
+      "description": "Restaurant profile information under the Menu Manager",
+      "type": "object",
+      "properties": {
+        "businessId": { "type": "string" },
+        "restaurantName": { "type": "string" },
+        "description": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "category": { "type": "string" },
+        "phone": { "type": "string" },
+        "location": { "type": "string" },
+        "active": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["businessId", "restaurantName"]
+    },
+    "menuSection": {
+      "title": "Menu Section",
+      "description": "Category or section grouping for menu items",
+      "type": "object",
+      "properties": {
+        "sectionId": { "type": "string" },
+        "businessId": { "type": "string" },
+        "sectionName": { "type": "string" },
+        "description": { "type": "string" },
+        "sortOrder": { "type": "number" },
+        "active": { "type": "boolean" }
+      },
+      "required": ["sectionId", "businessId", "sectionName", "sortOrder"]
+    },
+    "menuProduct": {
+      "title": "Menu Product",
+      "description": "Individual food or beverage menu items within a section",
+      "type": "object",
+      "properties": {
+        "productId": { "type": "string" },
+        "businessId": { "type": "string" },
+        "sectionId": { "type": "string" },
+        "productName": { "type": "string" },
+        "translatedName": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "imageUrl": { "type": "string" },
+        "allergens": { "type": "array" },
+        "available": { "type": "boolean" },
+        "sortOrder": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["productId", "businessId", "sectionId", "productName", "price", "available", "sortOrder"]
+    },
+    "securityAuditLog": {
+      "title": "Security Audit Log",
+      "description": "Records significant authentication and administrative actions for security tracking",
+      "type": "object",
+      "properties": {
+        "logId": { "type": "string" },
+        "eventType": { "type": "string" },
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "userRole": { "type": "string" },
+        "action": { "type": "string" },
+        "userAgent": { "type": "string" },
+        "resourceId": { "type": "string" },
+        "businessId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["logId", "eventType", "action", "createdAt"]
+    }
+  },
+  "firestore": {
+    "businesses/{businessId}": {
+      "schema": "client",
+      "description": "Unified business metadata configuration node"
+    },
+    "clients/{clientDocId}": {
+      "schema": "client",
+      "description": "Merchants registered to accept payments"
+    },
+    "transactions/{transactionId}": {
+      "schema": "transaction",
+      "description": "Payment transactions for all merchants"
+    },
+    "payments/{paymentId}": {
+      "schema": "payment",
+      "description": "Audit log of all payments"
+    },
+    "activations/{activationId}": {
+      "schema": "activation",
+      "description": "Licensing key registrations and hardware activation bindings"
+    },
+    "users/{userId}": {
+      "schema": "user",
+      "description": "Platform user login and credential specifications"
+    },
+    "devices/{deviceId}": {
+      "schema": "device",
+      "description": "Hardware/browser registered devices"
+    },
+    "systemLogs/{logId}": {
+      "schema": "systemLog",
+      "description": "Telemetry and automated system monitoring error database"
+    },
+    "autoFixLogs/{fixId}": {
+      "schema": "autoFixLog",
+      "description": "Log entries of automatic and supervisor-confirmed diagnostic system repairs"
+    },
+    "customerFeedback/{feedbackId}": {
+      "schema": "customerFeedback",
+      "description": "Log entries of customer invoice ratings and reviews"
+    },
+    "menus/{menuId}": {
+      "schema": "menu",
+      "description": "Restaurant profile menu definitions"
+    },
+    "menuSections/{sectionId}": {
+      "schema": "menuSection",
+      "description": "Category sections within the menu"
+    },
+    "menuProducts/{productId}": {
+      "schema": "menuProduct",
+      "description": "Menu products and dishes"
+    },
+    "logs/{logId}": {
+      "schema": "securityAuditLog",
+      "description": "Exhaustive immutable audit trail of authentication and administrative events"
+    }
+  }
+}

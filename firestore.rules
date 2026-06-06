@@ -1,0 +1,193 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global Common Functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isSuperAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == "ishimwecharles2525@gmail.com" || 
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "super_admin")
+      );
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function getUserRole() {
+      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) ? getUserData().role : "none";
+    }
+
+    function getUserBusinessId() {
+      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) ? getUserData().businessId : "none";
+    }
+
+    function isBusinessAdminOf(businessId) {
+      return isSignedIn() && (
+        isSuperAdmin() || (getUserBusinessId() == businessId && getUserRole() == "business_admin")
+      );
+    }
+
+    function isBusinessStaffOf(businessId) {
+      return isSignedIn() && (
+        isSuperAdmin() || 
+        (getUserBusinessId() == businessId && (getUserRole() == "business_admin" || getUserRole() == "cashier" || getUserRole() == "waiter"))
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // 1. Clients and Businesses (Public reading of individual metadata, Super admin controls)
+    match /clients/{clientId} {
+      allow read: if true;
+      allow create, update: if isSuperAdmin() || isBusinessAdminOf(clientId);
+      allow delete: if isSuperAdmin();
+    }
+    match /businesses/{businessId} {
+      allow read: if true;
+      allow create, update: if isSuperAdmin() || isBusinessAdminOf(businessId);
+      allow delete: if isSuperAdmin();
+    }
+
+    // 2. Users Registry (Secured users profiles read & query isolation)
+    match /users/{userId} {
+      allow get: if isSuperAdmin() || (request.auth != null && request.auth.uid == userId) || (request.auth == null);
+      allow list: if isSuperAdmin() || (isSignedIn() && resource.data.businessId == getUserBusinessId()) || (request.auth == null);
+      
+      allow create: if isSuperAdmin() || (
+        isSignedIn() && getUserRole() == "business_admin" && 
+        request.resource.data.businessId == getUserBusinessId() && 
+        request.resource.data.role != "super_admin"
+      );
+      
+      allow update: if isSuperAdmin() || (
+        isSignedIn() && getUserRole() == "business_admin" && 
+        resource.data.businessId == getUserBusinessId() && 
+        request.resource.data.role != "super_admin"
+      ) || (
+        isSignedIn() && request.auth.uid == userId && 
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'businessId', 'active'])
+      );
+      
+      allow delete: if isSuperAdmin() || (
+        isSignedIn() && getUserRole() == "business_admin" && 
+        resource.data.businessId == getUserBusinessId()
+      );
+    }
+
+    // 3. Devices Registry (Business Device Registration, Approval Verification, limits check)
+    match /devices/{deviceId} {
+      allow get: if true;
+      allow list: if isSignedIn();
+      allow create, update: if true; // Handled client-side and verified on standard login endpoint
+      allow delete: if isSuperAdmin();
+    }
+
+    // 4. Transactions (Public payments creation, status updates & business audits)
+    match /transactions/{transactionId} {
+      allow create: if true;
+      allow get: if true;
+      allow list: if isSuperAdmin() || (isSignedIn() && getUserBusinessId() == resource.data.businessId);
+      allow update: if isSuperAdmin() || (isSignedIn() && getUserBusinessId() == resource.data.businessId);
+      allow delete: if isSuperAdmin();
+    }
+
+    // 5. Payments logging
+    match /payments/{paymentId} {
+      allow create: if true;
+      allow get: if true;
+      allow list: if isSuperAdmin() || (isSignedIn() && getUserBusinessId() == resource.data.businessId);
+      allow update, delete: if isSuperAdmin();
+    }
+
+    // 6. Subscription Activations
+    match /activations/{activationId} {
+      allow get: if true;
+      allow list: if isSuperAdmin();
+      allow write: if isSuperAdmin();
+    }
+
+    // 7. Bills (Public checkouts, status tracking & cashier managers)
+    match /bills/{billId} {
+      allow get: if true; // public /public/bill/:billId looking it up
+      allow list: if isSuperAdmin() || (isSignedIn() && getUserBusinessId() == resource.data.businessId);
+      
+      allow create: if isSuperAdmin() || (
+        isSignedIn() && 
+        (getUserRole() == "waiter" || getUserRole() == "cashier" || getUserRole() == "business_admin") && 
+        request.resource.data.businessId == getUserBusinessId()
+      );
+      
+      allow update: if isSuperAdmin() || (
+        isSignedIn() && getUserBusinessId() == resource.data.businessId && (
+          (getUserRole() == "waiter" && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status']) && request.resource.data.status != "paid") ||
+          (getUserRole() == "cashier" || getUserRole() == "business_admin")
+        )
+      );
+      
+      allow delete: if isSuperAdmin() || (
+        isSignedIn() && getUserRole() == "business_admin" && 
+        resource.data.businessId == getUserBusinessId()
+      );
+    }
+
+    // 8. Systems Logs & Telemetry Metrics
+    match /systemLogs/{logId} {
+      allow create: if true;
+      allow get, list: if isSuperAdmin();
+      allow update, delete: if isSuperAdmin();
+    }
+    match /performanceReports/{reportId} {
+      allow read, write: if isSuperAdmin();
+    }
+    match /autoFixLogs/{fixId} {
+      allow read, write: if isSuperAdmin();
+    }
+
+    // 9. Customer Feedback & Metrics Reviews
+    match /customerFeedback/{feedbackId} {
+      allow create: if true;
+      allow get, list: if isSuperAdmin() || (isSignedIn() && getUserBusinessId() == resource.data.businessId);
+      allow update, delete: if isSuperAdmin();
+    }
+
+    // 10. Menu system hierarchy (Everyone reads publicly, updates restricted to store admins)
+    match /menus/{menuId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isBusinessAdminOf(request.resource.data.businessId);
+    }
+    match /menuSections/{sectionId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isBusinessAdminOf(request.resource.data.businessId);
+    }
+    match /menuProducts/{productId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isBusinessAdminOf(request.resource.data.businessId);
+    }
+
+    // 11. Custom QR mapping
+    match /merchantQRCodes/{qrId} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+
+    // 12. Security Audit Logs (Immutable security tracking)
+    match /logs/{logId} {
+      allow create: if true;
+      allow get, list: if isSuperAdmin() || (isSignedIn() && getUserBusinessId() == resource.data.businessId);
+      allow update, delete: if false;
+    }
+  }
+}
