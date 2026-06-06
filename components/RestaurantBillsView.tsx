@@ -1236,8 +1236,15 @@ export default function RestaurantBillsView({ clients, toast, userRole = "super_
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-sm bg-white text-[#0C0E14] rounded-3xl overflow-hidden p-6 font-mono text-center space-y-5"
-            >
+             className="w-full max-w-[380px] max-h-[90vh] overflow-y-auto bg-white text-[#0C0E14] rounded-3xl p-6 font-mono text-center space-y-5"
+            ><div className="flex justify-end">
+  <button
+    onClick={() => setQrModalBill(null)}
+    className="px-3 py-1 bg-red-500 text-white rounded-lg"
+  >
+    ✕ Close
+  </button>
+</div>
               
               {/* Sticker Content Area for easy printing and scan */}
               <div id="qr-sticker-printable" className="p-4 border-2 border-[#0C0E14] rounded-2xl bg-white space-y-4">
@@ -1262,7 +1269,7 @@ export default function RestaurantBillsView({ clients, toast, userRole = "super_
                 {/* Large QR Display */}
                 {qrBase64 ? (
                   <div className="p-2 border border-slate-100 rounded-xl bg-white inline-block shadow-sm">
-                    <img src={qrBase64} className="w-[180px] h-[180px] mx-auto" alt="Order QR" />
+                   <img src={qrBase64} className="w-[120px] h-[120px] mx-auto" alt="Order QR" />
                   </div>
                 ) : (
                   <div className="py-12 text-slate-400 font-bold">Creating Code Matrix...</div>
