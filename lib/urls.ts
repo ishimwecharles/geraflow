@@ -13,7 +13,7 @@ export function getPublicUrl(path: string): string {
   const cleanPath = path.replace(/^\/+|\/+$/g, "");
 
   // If origin is exactly production, use origin
-  if (origin && origin.includes("gera-pay-qr-963704237663.europe-west2.run.app")) {
+  if (origin && origin.includes("https://gera-flow.web.app")) {
     return `${origin}/${cleanPath}`;
   }
 
