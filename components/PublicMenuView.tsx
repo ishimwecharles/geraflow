@@ -10,7 +10,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { createOrder, OrderItem } from "../lib/orders";
-import { Menu, MenuSection, MenuProduct } from ../lib/types
+import { Menu, MenuSection, MenuProduct } from "../lib/types";
 import { 
   UtensilsCrossed, 
   Phone, 
@@ -602,7 +602,7 @@ const handlePlaceOrder = async () => {
   disabled={!p.available}
   className="mt-3 px-4 py-2 rounded-xl bg-[#FFC107] text-black font-bold text-sm hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
 >
-  + Add To Order
+  🔥 TEST BUTTON 🔥
 </button>
 
                             {/* Tags & Availability indicators */}
