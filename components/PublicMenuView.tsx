@@ -9,6 +9,7 @@ import {
   getDoc 
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
+import { createOrder, OrderItem } from "../lib/orders";
 import { Menu, MenuSection, MenuProduct } from "../types";
 import { 
   UtensilsCrossed, 
@@ -54,6 +55,11 @@ export default function PublicMenuView({ businessIdParam, onBackToPortal }: Publ
   const [menuProfile, setMenuProfile] = useState<Menu | null>(null);
   const [sections, setSections] = useState<MenuSection[]>([]);
   const [products, setProducts] = useState<MenuProduct[]>([]);
+  const [cart, setCart] = useState<OrderItem[]>([]);
+const [customerName, setCustomerName] = useState("");
+const [tableNumber, setTableNumber] = useState("");
+const [placingOrder, setPlacingOrder] = useState(false);
+const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
@@ -290,7 +296,85 @@ export default function PublicMenuView({ businessIdParam, onBackToPortal }: Publ
       </div>
     );
   }
+const addToCart = (product: MenuProduct) => {
+  if (!product.available) return;
 
+  setCart((prev) => {
+    const existing = prev.find((item) => item.productId === product.productId);
+
+    if (existing) {
+      return prev.map((item) =>
+        item.productId === product.productId
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      );
+    }
+
+    return [
+      ...prev,
+      {
+        productId: product.productId,
+        name: product.productName,
+        price: product.price,
+        quantity: 1,
+      },
+    ];
+  });
+};
+
+const removeFromCart = (productId: string) => {
+  setCart((prev) =>
+    prev
+      .map((item) =>
+        item.productId === productId
+          ? { ...item, quantity: item.quantity - 1 }
+          : item
+      )
+      .filter((item) => item.quantity > 0)
+  );
+};
+
+const cartTotal = cart.reduce(
+  (sum, item) => sum + item.price * item.quantity,
+  0
+);
+
+const handlePlaceOrder = async () => {
+  if (!customerName.trim()) {
+    alert("Please enter your name.");
+    return;
+  }
+
+  if (!tableNumber.trim()) {
+    alert("Please enter your table number.");
+    return;
+  }
+
+  if (cart.length === 0) {
+    alert("Please add food to your order.");
+    return;
+  }
+
+  try {
+    setPlacingOrder(true);
+
+    const orderId = await createOrder({
+      businessId: businessIdParam,
+      customerName,
+      tableNumber,
+      items: cart,
+      totalAmount: cartTotal,
+    });
+
+    setCreatedOrderId(orderId);
+    setCart([]);
+  } catch (error) {
+    console.error(error);
+    alert("Failed to place order. Please try again.");
+  } finally {
+    setPlacingOrder(false);
+  }
+};
   return (
     <div className="min-h-screen bg-[#0C0E14] text-slate-200 flex flex-col relative overflow-hidden font-sans pb-12 selection:bg-[#FFE082] selection:text-[#0C0E14]">
       {/* Decorative background radial glows */}
@@ -493,6 +577,7 @@ export default function PublicMenuView({ businessIdParam, onBackToPortal }: Publ
                                 <span className="text-[#FFC107] font-extrabold text-[12px] sm:text-[13px] font-mono shrink-0 bg-[#0C0E14] border border-white/5 px-2 py-0.5 rounded-lg shadow-sm">
                                   {p.price.toLocaleString()} RWF
                                 </span>
+   
                               </div>
 
                               {p.translatedName && (
@@ -546,6 +631,13 @@ export default function PublicMenuView({ businessIdParam, onBackToPortal }: Publ
                                     <span className="w-1 h-1 rounded-full bg-red-500" /> Out of stock
                                   </span>
                                 )}
+                                <button
+  onClick={() => addToCart(p)}
+  disabled={!p.available}
+  className="mt-2 px-3 py-2 rounded-xl bg-[#FFC107] text-black font-bold text-xs hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+>
+  + Add To Order
+</button>
                               </div>
                             </div>
                           </div>
