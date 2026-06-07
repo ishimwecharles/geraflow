@@ -15,7 +15,7 @@ import {
   updateDoc, 
   serverTimestamp 
 } from "firebase/firestore";
-import { Bill, BillItem, BillStatus, DeviceMode, Client } from "../types";
+import { Bill, BillItem, BillStatus, DeviceMode, Client } from "../lib/types";
 import { safeLocalStorage } from "../lib/storage";
 import { getBillUrl } from "../lib/urls";
 import { 

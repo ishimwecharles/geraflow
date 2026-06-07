@@ -10,7 +10,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { createOrder, OrderItem } from "../lib/orders";
-import { Menu, MenuSection, MenuProduct } from "../types";
+import { Menu, MenuSection, MenuProduct } from ../lib/types
 import { 
   UtensilsCrossed, 
   Phone, 
@@ -590,12 +590,20 @@ const handlePlaceOrder = async () => {
                                 <p className="text-[10px] sm:text-[11px] text-slate-400 font-sans leading-relaxed line-clamp-3">
                                   {p.description}
                                 </p>
+                                
                               ) : (
                                 <p className="text-[9.5px] text-slate-600 font-sans italic">
                                   No details specified.
                                 </p>
                               )}
                             </div>
+                            <button
+  onClick={() => addToCart(p)}
+  disabled={!p.available}
+  className="mt-3 px-4 py-2 rounded-xl bg-[#FFC107] text-black font-bold text-sm hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+>
+  + Add To Order
+</button>
 
                             {/* Tags & Availability indicators */}
                             <div className="space-y-2 pt-2">
@@ -631,13 +639,7 @@ const handlePlaceOrder = async () => {
                                     <span className="w-1 h-1 rounded-full bg-red-500" /> Out of stock
                                   </span>
                                 )}
-                                <button
-  onClick={() => addToCart(p)}
-  disabled={!p.available}
-  className="mt-2 px-3 py-2 rounded-xl bg-[#FFC107] text-black font-bold text-xs hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
->
-  + Add To Order
-</button>
+                                
                               </div>
                             </div>
                           </div>
