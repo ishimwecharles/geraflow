@@ -602,7 +602,7 @@ const handlePlaceOrder = async () => {
   disabled={!p.available}
   className="mt-3 px-4 py-2 rounded-xl bg-[#FFC107] text-black font-bold text-sm hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
 >
-  🔥 TEST BUTTON 🔥
+  + Add To Order
 </button>
 
                             {/* Tags & Availability indicators */}
