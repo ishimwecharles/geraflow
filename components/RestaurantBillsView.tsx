@@ -474,10 +474,11 @@ export default function RestaurantBillsView({ clients, toast, userRole = "super_
     const billDoc: Bill = {
       billId: uniqueBillNum,
       clientId: selectedClient.clientId,
+
       businessName: selectedClient.businessName,
       tableNumber: tableNumber,
       customerName: customerName.trim() || undefined,
-      items: activeItems,
+      items: activeItems,businessId: selectedClient.clientId,
       subtotal,
       totalAmount,
       currency: "RWF",

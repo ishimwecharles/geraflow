@@ -122,13 +122,9 @@ service cloud.firestore {
     // 7. Bills (Public checkouts, status tracking & cashier managers)
     match /bills/{billId} {
       allow get: if true; // public /public/bill/:billId looking it up
-      allow list: if isSuperAdmin() || (isSignedIn() && getUserBusinessId() == resource.data.businessId);
+      allow list: if isSignedIn();
       
-      allow create: if isSuperAdmin() || (
-        isSignedIn() && 
-        (getUserRole() == "waiter" || getUserRole() == "cashier" || getUserRole() == "business_admin") && 
-        request.resource.data.businessId == getUserBusinessId()
-      );
+     allow create: if isSignedIn();
       
       allow update: if isSuperAdmin() || (
         isSignedIn() && getUserBusinessId() == resource.data.businessId && (
