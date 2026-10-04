@@ -82,6 +82,7 @@ export interface Bill {
   id?: string; // Firestore document ID
   billId: string; // custom human readable format, e.g. BILL-XXXX
   clientId: string; // store / client identification code
+  businessId?: string;
   businessName: string; // client store name
   tableNumber: string;
   customerName?: string;

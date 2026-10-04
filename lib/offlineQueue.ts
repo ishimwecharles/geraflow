@@ -73,6 +73,7 @@ export async function syncOfflineQueue(db: any, onSyncSuccess?: (msg: string) =>
         delete payloadWithTime.isOfflinePending;
         
         // Use setDoc so that the custom human-readable billId becomes the Firestore document key
+        console.log("SYNC COLLECTION:", action.collectionName);
         await setDoc(doc(db, action.collectionName, action.payload.billId), payloadWithTime);
         successfulSyncs++;
       } else if (action.type === 'update_bill_status') {

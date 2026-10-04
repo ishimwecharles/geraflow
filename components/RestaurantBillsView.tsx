@@ -471,16 +471,17 @@ export default function RestaurantBillsView({ clients, toast, userRole = "super_
     const expiresAtDate = new Date(Date.now() + leaseMs);
 
     // Document schema representation
-    const billDoc: Bill = {
-      billId: uniqueBillNum,
-      clientId: selectedClient.clientId,
-
-      businessName: selectedClient.businessName,
-      tableNumber: tableNumber,
-      customerName: customerName.trim() || undefined,
-      items: activeItems,businessId: selectedClient.clientId,
-      subtotal,
-      totalAmount,
+    
+      const billDoc: Bill = {
+  billId: uniqueBillNum,
+  clientId: selectedClient.clientId,
+  businessId: selectedClient.clientId,
+  businessName: selectedClient.businessName,
+  tableNumber: tableNumber,
+  customerName: customerName.trim() || undefined,
+  items: activeItems,
+  subtotal,
+  totalAmount,
       currency: "RWF",
       status: "unpaid",
       createdAt: new Date(), // Local fallback
@@ -493,7 +494,7 @@ export default function RestaurantBillsView({ clients, toast, userRole = "super_
     try {
       if (isOfflineTesting || !navigator.onLine) {
         // Queue action for offline syncing
-        addToOfflineQueue("create_bill", "bills", billDoc);
+        addToOfflineQueue("create_bill", "bills", { ...billDoc, isOfflinePending: true });
         toast(`Offline Mode: ${uniqueBillNum} saved to local queue for table ${tableNumber}`, "info");
         updateQueueCount();
         setIsSubmitting(false);
@@ -519,7 +520,7 @@ export default function RestaurantBillsView({ clients, toast, userRole = "super_
     } catch (err) {
       console.error("Failed to create bill", err);
       toast("Error synchronizing billing transaction. Saving offline standard payload.", "warning");
-      addToOfflineQueue("create_bill", "bills", billDoc);
+      addToOfflineQueue("create_bill", "bills", { ...billDoc, isOfflinePending: true });
       updateQueueCount();
       setIsSubmitting(false);
       setShowCreateModal(false);
